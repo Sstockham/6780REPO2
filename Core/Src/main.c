@@ -83,6 +83,30 @@ void SystemClock_Config(void);
 	 }
 		
 	}
+	
+	
+		void ledselect(void){
+		
+		while (!(USART3->ISR & (1<<5))){}
+			
+				char input = USART3->RDR;
+			
+	 if (input == 'r'){
+		GPIOC->ODR ^= (GPIO_ODR_6);
+	 }
+		else if (input == 'g'){
+		GPIOC->ODR ^= (GPIO_ODR_7);
+		 }
+			else if (input == 'b'){
+		GPIOC->ODR ^= (GPIO_ODR_8);
+		 }
+			else if (input == 'o'){
+		GPIOC->ODR ^= (GPIO_ODR_9);
+		 }
+		else {
+		}
+	
+}
 int main(void)
 {
   /* USER CODE BEGIN 1 */
@@ -105,13 +129,13 @@ __HAL_RCC_USART3_CLK_ENABLE();
 	
 	GPIO_InitTypeDef LEDs ={
 	GPIO_PIN_6 | GPIO_PIN_7 |GPIO_PIN_8 | GPIO_PIN_9,
-	GPIO_MODE_AF_PP, GPIO_SPEED_FREQ_LOW, GPIO_NOPULL};
+	GPIO_MODE_OUTPUT_PP, GPIO_SPEED_FREQ_LOW, GPIO_NOPULL};
 	
 	GPIO_InitTypeDef Pins ={
 		GPIO_PIN_4 | GPIO_PIN_5, GPIO_MODE_AF_PP, GPIO_SPEED_FREQ_LOW, GPIO_NOPULL};
 	
 	
-	//HAL_GPIO_Init(GPIOC, &LEDs);
+	HAL_GPIO_Init(GPIOC, &LEDs);
 	HAL_GPIO_Init(GPIOC, &Pins);
 	
 	GPIOC -> AFR[0] |= (1<<16);
@@ -143,12 +167,14 @@ __HAL_RCC_USART3_CLK_ENABLE();
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 	char baudy[] = "hello";
+
   while (1)
   {
     /* USER CODE END WHILE */
-		HAL_Delay(500);
-stringer(baudy);
+	
+  // stringer(baudy);
 		
+		ledselect();
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
