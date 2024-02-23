@@ -20,8 +20,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32f0xx_it.h"
-volatile uint32_t counter;
-
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 /* USER CODE END Includes */
@@ -127,15 +125,11 @@ void PendSV_Handler(void)
 void SysTick_Handler(void)
 {
   /* USER CODE BEGIN SysTick_IRQn 0 */
-	counter++;
+
   /* USER CODE END SysTick_IRQn 0 */
-	if (counter == 400){
-		  GPIOC->ODR ^= (GPIO_ODR_7); 
-		counter = 0;
-	}
   HAL_IncTick();
   /* USER CODE BEGIN SysTick_IRQn 1 */
-	
+
   /* USER CODE END SysTick_IRQn 1 */
 }
 

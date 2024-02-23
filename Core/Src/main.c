@@ -59,10 +59,30 @@ void SystemClock_Config(void);
 /**
   * @brief  The application entry point.
   * @retval int
-*/
-
-
-
+  */
+	void baudy(char input){
+	
+	while(!(USART3->ISR & (1<<7))){
+		//USART3->TDR |= (input);
+	}
+		USART3->TDR = (input);
+	
+}
+	void stringer(char input[]){
+		
+	 int stringcounter = 0;
+		
+		while (1){
+	 if (input[stringcounter] == 0){
+		 break;
+	 }
+		else{
+			 baudy(input[stringcounter]);
+			 stringcounter +=1;
+		 }
+	 }
+		
+	}
 int main(void)
 {
   /* USER CODE BEGIN 1 */
@@ -80,99 +100,65 @@ int main(void)
 
   /* Configure the system clock */
   SystemClock_Config();
-	RCC->AHBENR |= RCC_AHBENR_GPIOCEN ;
-  __HAL_RCC_GPIOC_CLK_ENABLE();
+__HAL_RCC_GPIOC_CLK_ENABLE();
+__HAL_RCC_USART3_CLK_ENABLE();
+	
+	GPIO_InitTypeDef LEDs ={
+	GPIO_PIN_6 | GPIO_PIN_7 |GPIO_PIN_8 | GPIO_PIN_9,
+	GPIO_MODE_AF_PP, GPIO_SPEED_FREQ_LOW, GPIO_NOPULL};
+	
+	GPIO_InitTypeDef Pins ={
+		GPIO_PIN_4 | GPIO_PIN_5, GPIO_MODE_AF_PP, GPIO_SPEED_FREQ_LOW, GPIO_NOPULL};
 	
 	
-	RCC -> APB2RSTR |=(RCC_APB2RSTR_SYSCFGRST_Pos); //Use the RCC to enable the peripheral clock to the SYSCFG peripheral.
-	RCC->AHBENR |= RCC_AHBENR_GPIOAEN;
-  /* USER CODE BEGIN SysInit */
+	//HAL_GPIO_Init(GPIOC, &LEDs);
+	HAL_GPIO_Init(GPIOC, &Pins);
+	
+	GPIOC -> AFR[0] |= (1<<16);
+	GPIOC -> AFR[0] |= (1<<20);
 
 	
+	
+	//HAL_RCC_GetHCLKFreq();
+	
+	int baud = 115200;
+	
+	int BRINPUT = HAL_RCC_GetHCLKFreq()/baud;
+	
+	USART3 -> BRR |=(BRINPUT); //Set Baud Rate
+	USART3 -> CR1 |= (1<<3);
+	USART3 -> CR1 |= (1<<2);//enable TX/RX
+	
+	USART3 -> CR1 |= (1<<0); //Enable the USART
+
+  /* USER CODE BEGIN SysInit */
+
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
   /* USER CODE BEGIN 2 */
-	
-GPIOC->MODER|=(GPIO_MODER_MODER6_0);
-GPIOC->MODER|=(GPIO_MODER_MODER7_0);
-GPIOC->MODER|=(GPIO_MODER_MODER8_0);
-GPIOC->MODER|=(GPIO_MODER_MODER9_0);
 
-GPIOC->OTYPER &= ~(GPIO_OTYPER_OT_6);
-GPIOC->OTYPER &= ~(GPIO_OTYPER_OT_7);
-GPIOC->OTYPER &= ~(GPIO_OTYPER_OT_8);
-GPIOC->OTYPER &= ~(GPIO_OTYPER_OT_9);
-
-GPIOC->OSPEEDR &= ~(GPIO_OSPEEDR_OSPEEDR6);
-GPIOC->OSPEEDR &= ~(GPIO_OSPEEDR_OSPEEDR7);
-GPIOC->OSPEEDR &= ~(GPIO_OSPEEDR_OSPEEDR8);
-GPIOC->OSPEEDR &= ~(GPIO_OSPEEDR_OSPEEDR9);
-
-GPIOC->PUPDR &= ~(GPIO_PUPDR_PUPDR6);
-GPIOC->PUPDR &= ~(GPIO_PUPDR_PUPDR7);
-GPIOC->PUPDR &= ~(GPIO_PUPDR_PUPDR8);	
-GPIOC->PUPDR &= ~(GPIO_PUPDR_PUPDR9);
-
-GPIOC->BSRR  = GPIO_BSRR_BR_6 ;
-GPIOC->BSRR  = GPIO_BSRR_BR_7 ;
-GPIOC->BSRR = GPIO_BSRR_BR_8 ;
-GPIOC->BSRR = GPIO_BSRR_BS_9 ;
-
-//Configure the button pin (PA0) to input-mode at low-speed, with the internal pull-down
-//resistor enabled.
-GPIOA-> MODER &= ~(GPIO_MODER_MODER0);
-//GPIOA -> MODER &= ~(GPIO_MODER_MODER0_1);
-GPIOA -> OSPEEDR &= ~(GPIO_OSPEEDER_OSPEEDR0);
-GPIOA -> PUPDR |= GPIO_PUPDR_PUPDR0;
-
-
-// MY STUFF/ FIRST TRY
-//Enable/unmask interrupt generation on EXTI input line 0 (EXTI0).
-//EXTI-> IMR |= (0<<0);
-
-//Configure the EXTI input line 0 to have a rising-edge trigger.
-//EXTI-> RTSR |= (1<<0);
-
-//SYSCFG->EXTICR[0] |= (0x000); //Configure the multiplexer to route PA0 to the EXTI input line 0 (EXTI0).
-
-
-// APENDIX EXAMPLES
-SYSCFG->EXTICR[1] &= (uint16_t)~SYSCFG_EXTICR1_EXTI0_PA; /* (2) */
-EXTI->IMR = 0x0001; /* (3) */
-EXTI->RTSR = 0x0001; /* (4) */
-//EXTI->FTSR = 0x0001; /* (5) */
-
-
-
-  NVIC_EnableIRQ(EXTI0_1_IRQn); /* (1) */
-  NVIC_SetPriority(EXTI0_1_IRQn,0); // Enable the selected EXTI interrupt by passing its defined name to the NVIC_EnableIRQ(), Set the priority for the interrupt to 1 (high-priority) with the NVIC_SetPriority() function
   /* USER CODE END 2 */
+
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
- 
+	char baudy[] = "hello";
   while (1)
   {
     /* USER CODE END WHILE */
- HAL_Delay(200); // Delay 200ms
-// Toggle the output state of both PC8 and PC9
-//HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8 | GPIO_PIN_9);
-   // GPIOC -> ODR |= GPIO_ODR_6;
-			//GPIOC->ODR ^= GPIO_ODR_6;
-			//GPIOC ->BSRR = GPIO_BSRR_BS_6;
-  // GPIOC->ODR ^= (GPIO_ODR_9);
-	GPIOC->ODR ^= (GPIO_ODR_6);
+		HAL_Delay(500);
+stringer(baudy);
+		
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
 }
 
+
 /**
   * @brief System Clock Configuration
   * @retval None
   */
-volatile uint32_t counter2;
-
 void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
@@ -207,19 +193,7 @@ void SystemClock_Config(void)
 /* USER CODE BEGIN 4 */
 
 /* USER CODE END 4 */
-void EXTI0_1_IRQHandler(void){
-	//always clear flags!!!
-	//you always need to figure out how to clear flags when initializing a interupt handler
-	counter2 ++;
-	if (counter2 == 1500000){
-		 
-	counter2 = 0;
-  GPIOC->ODR ^= (GPIO_ODR_8);
-  GPIOC->ODR ^= (GPIO_ODR_9); 
- 
-  EXTI -> PR |= (0x0001);
-	}
-}
+
 /**
   * @brief  This function is executed in case of error occurrence.
   * @retval None
